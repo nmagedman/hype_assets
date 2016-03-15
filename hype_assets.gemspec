@@ -22,5 +22,8 @@ Gem::Specification.new do |spec|
 	spec.add_development_dependency "rake", "~> 10.0"
 	spec.add_development_dependency "rspec", "~> 3.0"
 
+	### Tilt has been DEPRECATED.  NOW they tell me.....
 	spec.add_runtime_dependency 'tilt', '~> 2.0'  # baseclass for Sprockets preprocessors
+
+	spec.add_runtime_dependency 'sprockets', '~> 3.0'
 end
