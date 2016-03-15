@@ -1,5 +1,2 @@
 require "hype_assets/version"
-
-module HypeAssets
-  # Your code goes here...
-end
+require "hype_assets/hype_template"
