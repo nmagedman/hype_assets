@@ -60,7 +60,7 @@ class HypeAssets::HypeTemplate < ::Tilt::Template
 			%Q[n:"#{n}"]
 		}
 
-		data
+		"// Pre-Processed with HypeAssets::HypeTemplate\n" + data
 	end
 
 
