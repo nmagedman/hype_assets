@@ -1,32 +1,26 @@
-require 'tilt'
+class HypeAssets::HypeTemplate
 
-class HypeAssets::HypeTemplate < ::Tilt::Template
-
-	def asset_url (resource)
+	def self.asset_url (resource)
 	### Wrapper function around the Sprockets helper,
 	### since it's not clear how best to invoke it.
 		ApplicationController.helpers.asset_url resource
 	end
 
 
-	def prepare
-		## Apparently this *must* be defined explicitly.
-		## There is no default no-op implementation.
-	end
-
-
-	def evaluate (scope, locals)
-		## The original *_hype_generated_script.js.hype file is
-		## slurped into `data`, defined by ::Tilt::Template.
-		## Massage it to include the digested/CDN'd filenames,
-		## and return it.
-
+	def self.call (input)
+	### Massage the raw foo.hyperesources/foo_hype_generated_script.js.hype file
+	### to use digested filenames, stored potentially on a CDN.
+	### @input [Hash] See http://www.rubydoc.info/gems/sprockets/3.5.2#Processor_Interface
+	###   for a description of input's fields.
+	### @returns [String or Hash] see sprockets README
+puts "HypeAssets: Processing #{input[:name]} @ #{Time.now}"
+		hype_script = input[:data]
 		folder = nil
 
 		## THE BASE URL:
 		## Replace: var f="animation_name.hyperesources"
 		## With:    var f="https://my.cdn.com/assets/animation_name.hyperesources"
-		data.sub!(/var f="([^"]+)"/) {
+		hype_script.sub!(/var f="([^"]+)"/) {
 			folder = $1
 			## TODO: Don't hardcode `assets`.  Get it dynamically from the config.
 			path = asset_url "assets/#{folder}"
@@ -37,7 +31,7 @@ class HypeAssets::HypeTemplate < ::Tilt::Template
 		## The HYPE Library:
 		## Replace: "HYPE-466.full.min.js":"HYPE-466.thin.min.js"
 		## With:    "HYPE-466.full.min-1234567890abcdef.js":"HYPE-466.thin.min-1234567890abcdef.js"
-		data.sub!(/"(HYPE-\d+.full.min.js)":"(HYPE-\d+.thin.min.js)"/) {
+		hype_script.sub!(/"(HYPE-\d+.full.min.js)":"(HYPE-\d+.thin.min.js)"/) {
 			full = digested_asset_filename "#{folder}/#{$1}"
 			thin = digested_asset_filename "#{folder}/#{$2}"
 			%Q["#{full}":"#{thin}"]
@@ -55,16 +49,16 @@ class HypeAssets::HypeTemplate < ::Tilt::Template
 		##   For example, all the filenames are grouped together in a hash which is the third
 		##   argument to `new HYPE_466()`.   Of course, that could change from version to version
 		##   of Hype!
-		data.gsub!(/\bn:"([^"]+\.[^"]+)"/) {
+		hype_script.gsub!(/\bn:"([^"]+\.[^"]+)"/) {
 			n = digested_asset_filename "#{folder}/#{$1}"
 			%Q[n:"#{n}"]
 		}
 
-		"// Pre-Processed with HypeAssets::HypeTemplate\n" + data
+		"// Pre-Processed with HypeAssets v#{::HypeAssets::VERSION} @ #{Time.now}\n#{hype_script}"
 	end
 
 
-	def digested_asset_filename (resource)
+	def self.digested_asset_filename (resource)
 	### @returns the digested version of an asset's filename.
 	### It returns *just* the filename itself (i.e. the basename),
 	### since Hype's script internally concatenates the filename
@@ -76,10 +70,10 @@ class HypeAssets::HypeTemplate < ::Tilt::Template
 		## Not sure which code arrangement is easiest to read:
 
 		## Individual steps:
-		# decoded_resource = URI.decode resource
-		# path             = ApplicationHelper.asset_path decoded_resource
-		# basename         = File.basename path
-		# re_encoded_name  = URI.encode basename
+		# decoded_resource = URI.decode    resource
+		# digested_path    = asset_url     decoded_resource
+		# basename         = File.basename digested_path
+		# re_encoded_name  = URI.encode    basename
 
 		## Chained:
 		# URI.encode(File.basename(asset_url(URI.decode(resource))))
