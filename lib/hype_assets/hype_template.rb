@@ -1,12 +1,5 @@
 class HypeAssets::HypeTemplate
 
-	def self.asset_url (resource)
-	### Wrapper function around the Sprockets helper,
-	### since it's not clear how best to invoke it.
-		ApplicationController.helpers.asset_url resource
-	end
-
-
 	def self.call (input)
 	### Massage the raw foo.hyperesources/foo_hype_generated_script.js.hype file
 	### to use digested filenames, stored potentially on a CDN.
@@ -67,18 +60,25 @@ puts "HypeAssets: Processing #{input[:name]} @ #{Time.now}"
 		### Incidentally, it encodes `@`, even though this is a safe character, AFAICT.
 		### URI.encode does *not* re-encode the `@`, but that doesn't seem to break things.
 
-		## Not sure which code arrangement is easiest to read:
+		decoded_resource = URI.decode    resource
+		digested_path    = digest_path   decoded_resource
+		basename         = File.basename digested_path
+		re_encoded_name  = URI.encode    basename
+	end
 
-		## Individual steps:
-		# decoded_resource = URI.decode    resource
-		# digested_path    = asset_url     decoded_resource
-		# basename         = File.basename digested_path
-		# re_encoded_name  = URI.encode    basename
 
-		## Chained:
-		# URI.encode(File.basename(asset_url(URI.decode(resource))))
+	def self.asset_url (resource)
+	### Wrapper function around the Sprockets helper,
+	### since it's not clear how best to invoke it.
+		ApplicationController.helpers.asset_url resource
+	end
 
-		## Chained without parens:
-		URI.encode File.basename asset_url URI.decode resource
+
+	def self.digest_path (resource)
+	### Wrapper function around the Sprockets helper,
+	### since it's not clear how best to invoke it.
+		## To ensure we have the digested version of the filename,
+		## we have to load the Sprockets::Asset into memory.
+		Rails.application.assets.find_asset(resource).digest_path
 	end
 end
