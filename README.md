@@ -1,8 +1,12 @@
 # HypeAssets
 
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/hype_assets`. To experiment with that code, run `bin/console` for an interactive prompt.
+HypeAssets provides Rails Asset Pipeline integration for Tumult Hype animations.
 
-TODO: Delete this and the text above, and describe your gem
+[Tumult Hype] (http://tumult.com/hype/) is a tool for producing animations and interactive content implemented as HTML5 javascripts and images.  Integrating these into the Rails Asset Pipeline (aka Sprockets) would enable serving these resources from a CDN and versioning them with Digest Fingerprinting.  That integration is, unfortunately, difficult to do.  Rails expects that all file references be encapsulated with asset_path() calls within ERB tags, while Tumult Hype produces a minified javascript file containing image filenames that are concatenated onto a base URL.
+
+HypeAssets makes Rails Asset Pipeline integration easy by automatically modifying the foo_hype_generated_script.js file with the correct file references.
+
+
 
 ## Installation
 
@@ -16,23 +20,30 @@ And then execute:
 
     $ bundle
 
-Or install it yourself as:
 
-    $ gem install hype_assets
 
 ## Usage
 
-TODO: Write usage instructions here
+1. Create a folder for your hype animations.   I recommend `app/assets/hype`, but any folder in your assets search path will do.
 
-## Development
+2. Copy your `foo.hyperesources` folders into that folder.
 
-After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake spec` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
+3. Append a `.hype` extension to your hype scripts:
 
-To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and tags, and push the `.gem` file to [rubygems.org](https://rubygems.org).
+	$ cd app/assets/hype/foo.hyperesources
+	$ mv foo_hype_generated_script.js foo_hype_generated_script.js.hype
+
+   NOTE: Do NOT rename your other javascript files, e.g. HYPE-123.full.min.js.
+
+4. In your HTML, reference your hype animation script with
+
+	<%= javascript_include_tag "foo.hyperesources/foo_hype_generated_script.js" %>
+
+
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/[USERNAME]/hype_assets.
+Bug reports, pull requests, and general feedback are welcome on GitHub at https://github.com/nmagedman/hype_assets/issues.
 
 
 ## License
