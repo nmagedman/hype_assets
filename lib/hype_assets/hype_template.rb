@@ -1,14 +1,33 @@
 class HypeAssets::HypeTemplate
 
+
+	def self.cache_key
+	### Sprockets stores our processor's cache key along with the compiled asset.
+	### If we change the key, the compiled asset is invalidated and recompiled.
+	### Grep for @cache_key within the sprockets gem for examples of its definition.
+	### Things we might include here:
+	###   * gem or class name
+	###   * gem version
+	###   * version of any external libraries used
+	###   * configuration options, as `DigestUtils.digest(options)`
+		@cache_key ||= "#{name}:#{::HypeAssets::VERSION}"
+	end
+
+
 	def self.call (input)
 	### Massage the raw foo.hyperesources/foo_hype_generated_script.js.hype file
-	### to use digested filenames, stored potentially on a CDN.
-	### @input [Hash] See http://www.rubydoc.info/gems/sprockets/3.5.2#Processor_Interface
+	###   to use digested filenames, stored potentially on a CDN.
+	### @param input [Hash] See http://www.rubydoc.info/gems/sprockets/3.5.2#Processor_Interface
 	###   for a description of input's fields.
-	### @returns [String or Hash] see sprockets README
-puts "HypeAssets: Processing #{input[:name]} @ #{Time.now}"
-		hype_script = input[:data]
-		folder = nil
+	### @return [Hash] result is merged into (i.e. overrides) the original `input` hash
+
+		hype_script  = input[:data]
+		sprockets    = input[:environment]
+		dependencies = Set.new(input[:metadata][:dependencies])  # may be nil
+		folder       = nil
+
+		sprockets.logger.info "HypeAssets: Processing #{input[:name]} @ #{Time.now}"
+
 
 		## THE BASE URL:
 		## Replace: var f="animation_name.hyperesources"
@@ -27,6 +46,8 @@ puts "HypeAssets: Processing #{input[:name]} @ #{Time.now}"
 		hype_script.sub!(/"(HYPE-\d+.full.min.js)":"(HYPE-\d+.thin.min.js)"/) {
 			full = digested_asset_filename "#{folder}/#{$1}"
 			thin = digested_asset_filename "#{folder}/#{$2}"
+			dependencies << sprockets.resolve("#{folder}/#{$1}")
+			dependencies << sprockets.resolve("#{folder}/#{$2}")
 			%Q["#{full}":"#{thin}"]
 		}
 
@@ -44,10 +65,18 @@ puts "HypeAssets: Processing #{input[:name]} @ #{Time.now}"
 		##   of Hype!
 		hype_script.gsub!(/\bn:"([^"]+\.[^"]+)"/) {
 			n = digested_asset_filename "#{folder}/#{$1}"
+			dependencies << sprockets.resolve("#{folder}/#{$1}")
 			%Q[n:"#{n}"]
 		}
 
-		"// Pre-Processed with HypeAssets v#{::HypeAssets::VERSION} @ #{Time.now}\n#{hype_script}"
+		hype_script = "// Pre-Processed with HypeAssets v#{::HypeAssets::VERSION} @ #{Time.now}\n" #{hype_script}"
+
+
+		## We return only those value of the input hash that we wish to change
+		{
+			data:  hype_script,
+			dependencies: dependencies,
+		}
 	end
 
 
