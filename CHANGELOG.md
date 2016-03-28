@@ -1,6 +1,11 @@
 # CHANGELOG
 
 
+## 0.1.1  2016-03-28
+* Issue #5: Force a recompile of the `*.hype` file whenever a dependency changes,
+  including an external image file and the gem itself.
+
+
 ## 0.1.0  2016-03-20
 * Milestone: The basic idea is implemented!
   You can now add your .hyperesource folders into the assets folder,
