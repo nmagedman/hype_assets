@@ -33,14 +33,9 @@ class HypeAssets::HypeTemplate
 		## Replace: var f="animation_name.hyperesources"
 		## With:    var f="https://my.cdn.com/assets/animation_name.hyperesources"
 		hype_script.sub!(/var f="([^"]+)"/) {
-			folder = $1
-
-			## HACK:
-			## It would be best to get these from the sprockets environment
-			## and avoid reliance on Rails itself, but I can't find where in
-			## the environment these values are stored.
-			asset_host = Rails.application.config.action_controller.asset_host
-			prefix = Rails.application.config.assets.prefix
+			folder     = $1
+			asset_host = sprockets.context_class.config.asset_host  # shouldn't end in /
+			prefix     = sprockets.context_class.assets_prefix      # begins with /
 
 			url = "#{asset_host}#{prefix}/#{folder}"
 			%Q[var f="#{url}"]
@@ -109,7 +104,7 @@ class HypeAssets::HypeTemplate
 		##    "foo.hyperesources/file"
 		##    "file-digest:///foo.hyperesources/file"
 		##    "/absolute/path/to/foo.hyperesources/file"
-		absolute_path = sprockets.resolve(decoded_resource)
+		absolute_path   = sprockets.resolve(decoded_resource)
 		file_digest_uri = sprockets.build_file_digest_uri(absolute_path)
 			## NOTE: build_file_digest_uri just tacks on a file-digest:// prefix.
 			## It does //not// generate a digest hashcode.
