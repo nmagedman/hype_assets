@@ -34,9 +34,16 @@ class HypeAssets::HypeTemplate
 		## With:    var f="https://my.cdn.com/assets/animation_name.hyperesources"
 		hype_script.sub!(/var f="([^"]+)"/) {
 			folder = $1
-			## TODO: Don't hardcode `assets`.  Get it dynamically from the config.
-			path = asset_url "assets/#{folder}"
-			%Q[var f="#{path}"]
+
+			## HACK:
+			## It would be best to get these from the sprockets environment
+			## and avoid reliance on Rails itself, but I can't find where in
+			## the environment these values are stored.
+			asset_host = Rails.application.config.action_controller.asset_host
+			prefix = Rails.application.config.assets.prefix
+
+			url = "#{asset_host}#{prefix}/#{folder}"
+			%Q[var f="#{url}"]
 		}
 
 

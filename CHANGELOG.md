@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 0.1.2  2016-03-28
+* Issue #4: Don't hardcode `assets`.  Get it dynamically from the config.
+  Half-baked solution: We are using Rails rather than Sprockets directly.
+
 
 ## 0.1.1  2016-03-28
 * Issue #5: Force a recompile of the `*.hype` file whenever a dependency changes,
