@@ -19,7 +19,7 @@ class HypeAssets::HypeTemplate
 	###   to use digested filenames, stored potentially on a CDN.
 	### @param input [Hash] See http://www.rubydoc.info/gems/sprockets/3.5.2#Processor_Interface
 	###   for a description of input's fields.
-	### @return [Hash] result is merged into (i.e. overrides) the original `input` hash
+	### @return [Hash] :data is the post-processed content.   All other fields are merged into the :metadata hash.  See lib/sprockets/processor_utils.rb#call_processors()
 
 		hype_script  = input[:data]
 		sprockets    = input[:environment]
@@ -44,10 +44,8 @@ class HypeAssets::HypeTemplate
 		## Replace: "HYPE-466.full.min.js":"HYPE-466.thin.min.js"
 		## With:    "HYPE-466.full.min-1234567890abcdef.js":"HYPE-466.thin.min-1234567890abcdef.js"
 		hype_script.sub!(/"(HYPE-\d+.full.min.js)":"(HYPE-\d+.thin.min.js)"/) {
-			full = digested_asset_filename "#{folder}/#{$1}"
-			thin = digested_asset_filename "#{folder}/#{$2}"
-			dependencies << sprockets.resolve("#{folder}/#{$1}")
-			dependencies << sprockets.resolve("#{folder}/#{$2}")
+			full = digested_asset_filename "#{folder}/#{$1}", dependencies, sprockets
+			thin = digested_asset_filename "#{folder}/#{$2}", dependencies, sprockets
 			%Q["#{full}":"#{thin}"]
 		}
 
@@ -64,15 +62,13 @@ class HypeAssets::HypeTemplate
 		##   argument to `new HYPE_466()`.   Of course, that could change from version to version
 		##   of Hype!
 		hype_script.gsub!(/\bn:"([^"]+\.[^"]+)"/) {
-			n = digested_asset_filename "#{folder}/#{$1}"
-			dependencies << sprockets.resolve("#{folder}/#{$1}")
+			n = digested_asset_filename "#{folder}/#{$1}", dependencies, sprockets
 			%Q[n:"#{n}"]
 		}
 
-		hype_script = "// Pre-Processed with HypeAssets v#{::HypeAssets::VERSION} @ #{Time.now}\n" #{hype_script}"
+		hype_script = "// Pre-Processed with HypeAssets v#{::HypeAssets::VERSION} @ #{Time.now}\n #{hype_script}"
 
 
-		## We return only those value of the input hash that we wish to change
 		{
 			data:  hype_script,
 			dependencies: dependencies,
@@ -80,11 +76,14 @@ class HypeAssets::HypeTemplate
 	end
 
 
-	def self.digested_asset_filename (resource)
-	### @returns the digested version of an asset's filename.
-	### It returns *just* the filename itself (i.e. the basename),
-	### since Hype's script internally concatenates the filename
-	### onto a base URL.
+	def self.digested_asset_filename (resource, dependencies, sprockets)
+	### @param resource [String] uri-encoded asset, e.g. "folder/file%402x.jpg"
+	### @param dependencies [Set] (mutated) resource is added to the set
+	### @param sprockets [Sprockets::Environment] needed for its helper functions
+	### @return digested version of the asset's filename.
+	###         Returns *just* the filename itself (i.e. the basename),
+	###         since Hype's script internally concatenates the filename
+	###         onto a base URL.
 		### NOTE: The Hype *_hype_generated_script.js percent-encodes the filename.
 		### Incidentally, it encodes `@`, even though this is a safe character, AFAICT.
 		### URI.encode does *not* re-encode the `@`, but that doesn't seem to break things.
@@ -93,6 +92,23 @@ class HypeAssets::HypeTemplate
 		digested_path    = digest_path   decoded_resource
 		basename         = File.basename digested_path
 		re_encoded_name  = URI.encode    basename
+
+
+		## Ensure our .hype file will be recompiled if any of our images change.
+		## The Sprockets documentation is sorely lacking in explaining how to do this.
+		## From experimentation, we need an absolute file-digest:// URI:
+		##    "file-digest:///absolute/path/to/foo.hyperesources/file"
+		## Anything less will be silently ignored, including:
+		##    "foo.hyperesources/file"
+		##    "file-digest:///foo.hyperesources/file"
+		##    "/absolute/path/to/foo.hyperesources/file"
+		absolute_path = sprockets.resolve(decoded_resource)
+		file_digest_uri = sprockets.build_file_digest_uri(absolute_path)
+			## NOTE: build_file_digest_uri just tacks on a file-digest:// prefix.
+			## It does //not// generate a digest hashcode.
+		dependencies << file_digest_uri
+
+		re_encoded_name
 	end
 
 
