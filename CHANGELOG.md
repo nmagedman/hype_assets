@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## 0.1.3  2016-03-28
+* Issue #4: Don't hardcode `assets`.  Get it dynamically from the config.
+  OK, we're using Sprockets directly now (not Rails).  The docs
+  flag the method we are using (`.context_class`) as deprecated, however
+  they don't indicate what should be used instead.
+
+
 ## 0.1.2  2016-03-28
 * Issue #4: Don't hardcode `assets`.  Get it dynamically from the config.
   Half-baked solution: We are using Rails rather than Sprockets directly.
