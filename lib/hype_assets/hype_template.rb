@@ -68,7 +68,7 @@ class HypeAssets::HypeTemplate
 			%Q[n:"#{n}"]
 		}
 
-		hype_script = "// Pre-Processed with HypeAssets v#{::HypeAssets::VERSION} @ #{Time.now}\n #{hype_script}"
+		hype_script = "// Pre-Processed with HypeAssets v#{::HypeAssets::VERSION} @ #{Time.now}\n#{hype_script}"
 
 
 		{
