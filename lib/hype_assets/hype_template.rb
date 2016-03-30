@@ -111,6 +111,9 @@ class HypeAssets::HypeTemplate
 		dependencies << file_digest_uri
 
 		re_encoded_name
+	rescue NoMethodError => e
+		puts "HypeAssets: Unable to locate/process asset: #{resource}"
+		File.basename resource
 	end
 
 
