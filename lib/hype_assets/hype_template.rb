@@ -32,13 +32,17 @@ class HypeAssets::HypeTemplate
 		## THE BASE URL:
 		## Replace: var f="animation_name.hyperesources"
 		## With:    var f="https://my.cdn.com/assets/animation_name.hyperesources"
-		hype_script.sub!(/var f="([^"]+)"/) {
+		## NOTE: In HYPE 4xx this variable was called f.   In HYPE 5xx it's called h.
+		## We should be varname agnostic.  In any case, it is the first (and probably only)
+		## instance of a string ending in `.hyperesources`
+		## We can assume that it will still be a variable assignment.
+		hype_script.sub!(/="([^"]+)\.hyperesources"/) {
 			folder     = $1
 			asset_host = sprockets.context_class.config.asset_host  # shouldn't end in /
 			prefix     = sprockets.context_class.assets_prefix      # begins with /
 
 			url = "#{asset_host}#{prefix}/#{folder}"
-			%Q[var f="#{url}"]
+			%Q[="#{url}"]
 		}
 
 
