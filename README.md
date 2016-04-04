@@ -1,6 +1,6 @@
 # HypeAssets
 
-HypeAssets provides Rails Asset Pipeline integration for Tumult Hype animations.
+HypeAssets provides Rails Asset Pipeline integration for Tumult Hype 3 animations.
 
 [Tumult Hype](http://tumult.com/hype/) is a tool for producing animations and
 interactive content implemented as HTML5 javascripts and images.  Integrating these
@@ -17,6 +17,12 @@ tags, while Tumult Hype produces a minified javascript file containing image fil
 that are each concatenated client-side onto a single base URL.
 
 HypeAssets makes Rails Asset Pipeline integration easy by automatically modifying the foo_hype_generated_script.js file with the correct file references.
+
+
+## Requirements
+HypeAssets is designed to work with animations built with Tumult Hype version 3, using HYPE-4xx or HYPE-5xx runtime scripts. (It has been tested with HYPE-456, HYPE-466, and HYPE-526.)
+
+It also requires Sprockets 3.x, as they redesigned their asset processor API.
 
 
 ## Installation
@@ -59,6 +65,8 @@ And then execute:
 ## Contributing
 
 Bug reports, pull requests, and general feedback are welcome on GitHub at https://github.com/nmagedman/hype_assets/issues.
+
+If your hype animation works when run from a static page but fails when run via HypeAssets, please send me a zip of the `foo.hyperesources` folder and a `foo.html` container page.  Attach it to the github issue or email it to `nmagedman+hype@gmail.com`.
 
 
 ## License
