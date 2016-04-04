@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 0.2.0  2016-04-03
+* Issue #3: Support HYPE-5xx scripts.  i.e. Avoid relying on specific
+  variable names in the hype_generated_script
+* Issue #1: Support embedded fonts
+
 ## 0.1.3  2016-03-28
 * Issue #4: Don't hardcode `assets`.  Get it dynamically from the config.
   OK, we're using Sprockets directly now (not Rails).  The docs
