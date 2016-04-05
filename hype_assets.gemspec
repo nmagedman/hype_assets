@@ -9,7 +9,7 @@ Gem::Specification.new do |spec|
 	spec.authors       = ["Noach Magedman"]
 	spec.email         = ["nmagedman@gmail.com"]
 
-	spec.summary       = %q{Integrate Tumult Hype animation files into the Rails Asset Pipeline}
+	spec.summary       = %q{Integrate Tumult Hype 3 animation files into the Rails Asset Pipeline}
 	spec.description   = %q{Append `.hype` to your hype_generated_script.js and we take care of the rest!}
 	spec.homepage      = "https://github.com/nmagedman/hype_assets"
 	spec.license       = "MIT"
