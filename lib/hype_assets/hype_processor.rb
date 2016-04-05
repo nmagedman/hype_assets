@@ -1,4 +1,4 @@
-class HypeAssets::HypeTemplate
+class HypeAssets::HypeProcessor
 
 
 	def self.cache_key
