@@ -1,7 +1,6 @@
 class HypeAssets::HypeProcessor
 
 
-	def self.cache_key
 	### Sprockets stores our processor’s cache key along with the compiled asset.
 	### If we change the key, the compiled asset is invalidated and recompiled.
 	### Grep for @cache_key within the sprockets gem for examples of its definition.
@@ -10,11 +9,11 @@ class HypeAssets::HypeProcessor
 	###   * gem version
 	###   * version of any external libraries used
 	###   * configuration options, as `DigestUtils.digest(options)`
+	def self.cache_key
 		@cache_key ||= "#{name}:#{::HypeAssets::VERSION}"
 	end
 
 
-	def self.call (input)
 	### Massage the raw foo.hyperesources/foo_hype_generated_script.js.hype file
 	###   to use digested filenames, stored potentially on a CDN.
 	### @param input [Hash] See
@@ -24,6 +23,7 @@ class HypeAssets::HypeProcessor
 	###   :data [String] is the post-processed content (i.e. the massaged hype script).
 	###   All other fields are merged into the input[:metadata] hash.
 	###   See lib/sprockets/processor_utils.rb#call_processors()
+	def self.call (input)
 
 		hype_script  = input[:data]          # [String] *.js.hype file contents
 		sprockets    = input[:environment]   # [Sprockets::Environment]
@@ -126,7 +126,6 @@ class HypeAssets::HypeProcessor
 	end
 
 
-	def self.digested_asset_filename (filename, folder, dependencies, sprockets)
 	### @param filename [String] uri-encoded, e.g. "file%402x.jpg"
 	### @param folder [String] "animation_name.hyperesources"
 	### @param dependencies [Set] (mutated) asset is added to the set
@@ -135,6 +134,7 @@ class HypeAssets::HypeProcessor
 	###         Returns *just* the filename itself (i.e. the basename),
 	###         since Hype’s script internally concatenates the filename
 	###         onto a base URL.
+	def self.digested_asset_filename (filename, folder, dependencies, sprockets)
 		### NOTE: The Hype *_hype_generated_script.js percent-encodes the filename.
 		### Incidentally, it encodes `@`, even though this is a safe character, AFAICT.
 		### URI.encode does *not* re-encode the `@`, but that doesn't seem to break
@@ -168,17 +168,17 @@ class HypeAssets::HypeProcessor
 	end
 
 
-	def self.asset_url (resource)
 	### UNUSED.  I'm generating the base URL via the context_class now.
 	### Wrapper function around the Sprockets helper,
 	### since it's not clear how best to invoke it.
+	def self.asset_url (resource)
 		ApplicationController.helpers.asset_url resource
 	end
 
 
-	def self.digest_path (resource)
 	### Wrapper function around the Sprockets helper,
 	### since it's not clear how best to invoke it.
+	def self.digest_path (resource)
 		## To ensure we have the digested version of the filename,
 		## we have to load the Sprockets::Asset into memory.
 		Rails.application.assets.find_asset(resource).digest_path
